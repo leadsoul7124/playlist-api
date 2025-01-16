@@ -1,4 +1,19 @@
+# Node.js 관련 파일
 node_modules/
-*.log
+npm-debug.log*
+
+# 환경 변수 파일
 .env
+
+# MacOS에서 생성되는 불필요 파일
 .DS_Store
+
+# 로그 파일
+*.log
+
+# 빌드 디렉토리
+dist/
+build/
+
+# 캐시 파일
+*.cache
