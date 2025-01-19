@@ -25,7 +25,11 @@ const createOAuth2Client = () => {
   return new google.auth.OAuth2(project.clientId, project.clientSecret, project.redirectUri);
 };
 
-let oauth2Client = createOAuth2Client();
+const oauth2Client = new google.auth.OAuth2(
+  process.env.CLIENT_ID,
+  process.env.CLIENT_SECRET,
+  process.env.REDIRECT_URI
+);
 
 // 프로젝트 순환 로직
 const rotateProject = () => {
@@ -119,7 +123,7 @@ const convertToYouTube = async (track) => {
       .trim();
 
     const searchQuery = `"${cleanedName}" "${track.artist}"`;
-    const youtubeSearchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=relevance&key=${getCurrentYouTubeApiKey()}&q=${encodeURIComponent(
+    const youtubeSearchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=relevance&key=${process.env.API_KEY}&q=${encodeURIComponent(
       searchQuery
     )}`;
     console.log("YouTube Search URL:", youtubeSearchUrl);
@@ -321,7 +325,7 @@ if (fs.existsSync("refresh_token.json")) {
   oauth2Client.setCredentials({ refresh_token: refreshToken });
   console.log("Saved Refresh Token 로드 완료");
 } else {
-  console.log("Refresh Token 파일이 없습니다. OAuth 인증이 필요합니다.");
+  console.log("Refresh Token 파일이 없습니다. /auth 경로로 인증을 진행하세요.");
 }
 
 // 인증 URL 생성
@@ -334,19 +338,6 @@ app.get('/auth', (req, res) => {
   });
   res.redirect(url);
 });
-
-// 서버 시작 시 Refresh Token 로드
-const initializeRefreshToken = () => {
-  const refreshTokenPath = `refresh_token_project_${currentProjectIndex}.json`;
-
-  if (fs.existsSync(refreshTokenPath)) {
-    const refreshToken = JSON.parse(fs.readFileSync(refreshTokenPath, "utf8"));
-    oauth2Client.setCredentials({ refresh_token: refreshToken });
-    console.log("Saved Refresh Token 로드 완료");
-  } else {
-    console.log(`Refresh Token 파일이 없습니다. /auth 경로로 인증을 진행하세요.`);
-  }
-};
 
 // OAuth2 Callback 처리
 app.get('/oauth2callback', async (req, res) => {
